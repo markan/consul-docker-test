@@ -37,14 +37,16 @@ locals {
       merge({"name": name}, segment_config)
    ]
       
-   segment_config = local.use_segments ? templatefile("${path.module}/segment-conf.hcl", map("segments", local.segment_list)) : ""
+   segment_config = (local.use_segments ?
+   		  templatefile("${path.module}/segment-conf.hcl", tomap({"segments" = local.segment_list}))
+		  : "")
       
    server_uploads = [
       for srv in var.servers:
       merge(var.default_config, 
             lookup(srv, "config", {}), 
-            var.tls_enabled ? map("certs.hcl", local.cert_config) : {},
-            local.use_segments ? map("segment-conf.hcl", local.segment_config): {})
+            var.tls_enabled ? tomap({"certs.hcl" = local.cert_config}) : {},
+            local.use_segments ? tomap({"segment-conf.hcl" = local.segment_config}): {})
    ]
 
    server_ports = [
