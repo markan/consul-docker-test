@@ -40,7 +40,6 @@ variable "default_name_include_dc" {
   description = "Whether generated container names and hostnames should include the datacenter"
 }
 
-
 variable "default_networks" {
   type = list(string)
   default = ["consul-net"]

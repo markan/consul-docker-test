@@ -1,7 +1,7 @@
-locals {   
+locals {
    partial_name_dc = var.default_name_include_dc ? "${var.datacenter}-" : ""
    name_prefix = "${var.default_name_prefix}${local.partial_name_dc}"
-   
+
    client_names = [
       for index, client in var.clients:
       lookup(client, "name", "${local.name_prefix}${index}${var.default_name_suffix}")
@@ -21,11 +21,16 @@ locals {
    ]
 
    cert_config = file("${path.module}/certs.hcl")
-      
+
+   client_scripts = [
+     for client in var.clients:
+     lookup(client, "script", [])
+   ]
+
    client_uploads = [
       for client in var.clients:
       merge(var.default_config, lookup(client, "config", {}),
-      				var.tls_enabled ? tomap({"certs.hcl" = local.cert_config}) : {})
+                                var.tls_enabled ? tomap({"certs.hcl" = local.cert_config}) : {})
    ]
 
    client_ports = [
@@ -42,7 +47,7 @@ locals {
       for client in var.clients:
       lookup(client, "networks", var.default_networks)
    ]
-   
+
    client_tls_dns_names = [
       for index, client in var.clients:
       concat(lookup(client, "tls_dns_names", []), [local.client_hostnames[index], "client.${var.datacenter}.consul", "localhost"])
@@ -59,7 +64,7 @@ resource "tls_cert_request" "client_cert_reqs" {
    count = var.tls_enabled ? length(var.clients) : 0
    key_algorithm   = tls_private_key.client_keys[count.index].algorithm
    private_key_pem = tls_private_key.client_keys[count.index].private_key_pem
-   
+
    dns_names = local.client_tls_dns_names[count.index]
 
    subject {
@@ -91,7 +96,7 @@ resource "tls_locally_signed_cert" "client_certs" {
       "client_auth",
       "server_auth",
    ]
-   
+
    set_subject_key_id = true
 }
 
@@ -128,6 +133,15 @@ resource "docker_container" "client-containers" {
    env=var.env
 
    dynamic "upload" {
+      for_each = local.client_scripts[count.index]
+
+      content {
+         source = upload.value
+         file = "/consul/config/${upload.key}"
+      }
+   }
+
+   dynamic "upload" {
       for_each = local.client_uploads[count.index]
 
       content {
@@ -135,7 +149,7 @@ resource "docker_container" "client-containers" {
          file = "/consul/config/${upload.key}"
       }
    }
-   
+
    dynamic "upload" {
       for_each = local.client_tls_uploads[count.index]
 
