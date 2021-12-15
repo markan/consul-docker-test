@@ -1,0 +1,6 @@
+To build things
+
+docker build -f Dockerfile --build-arg ENVOY_VERSION=1.14.7 --build-arg CONSUL_VERSION=1.8-ent -t local/consul-enterprise-envoy:1.8-ent .
+
+
+docker build -f Dockerfile --build-arg ENVOY_VERSION=1.19.1 --build-arg CONSUL_VERSION=1.11.0-ent-rc -t local/consul-enterprise-envoy:1.11.0-ent-rc .
