@@ -18,7 +18,7 @@ variable "default_config" {
 
 variable "default_image" {
   type = string
-  default = "consul:latest"
+  default = "consul_base"
   description = "Default Consul Docker image to use for the server containers"
 }
 
