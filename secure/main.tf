@@ -33,7 +33,7 @@ module "servers" {
    persistent_data = true
    datacenter = "primary"
    default_networks = [docker_network.consul_network.name]
-   default_image = docker_image.consul.name
+   default_image = docker_image.consul.latest
    default_config = {
       "agent-conf.hcl" = file("agent-conf.hcl")
    }
@@ -61,7 +61,7 @@ module "clients" {
    
    datacenter = "primary"
    default_networks = [docker_network.consul_network.name]
-   default_image = docker_image.consul.name
+   default_image = docker_image.consul.latest
    default_config = {
       "agent-conf.hcl" = file("agent-conf.hcl")
    }
